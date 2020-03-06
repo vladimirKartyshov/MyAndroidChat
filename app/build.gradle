@@ -30,4 +30,4 @@ dependencies {
     implementation 'com.dyhdyh.support:glide:1.0.0'
 }
 
-    apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.gms.google-services'
