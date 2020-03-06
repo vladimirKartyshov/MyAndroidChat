@@ -13,6 +13,9 @@ import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +30,21 @@ public class MainActivity extends AppCompatActivity {
 
     private String userName;
 
+    FirebaseDatabase dataBase;
+    DatabaseReference messageDataBaseReference;
+//    DatabaseReference userDataBaseReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        dataBase = FirebaseDatabase.getInstance();//получаем допуск ко всей базе данных
+        messageDataBaseReference = dataBase.getReference().child("messages");
+//        messageDataBaseReference = dataBase.getReference().child("users");
+//        messageDataBaseReference.child("message1").setValue("Hello FireBase!");
+//        messageDataBaseReference.child("message2").setValue("Hello World!");//чтобы добавить еще один узел(запись) в базу
+//        userDataBaseReference.child("user1").setValue("Joe");
 
         progressBar = findViewById(R.id.progressBar);
         sendImageButton = findViewById(R.id.sendPhotoButton);
@@ -75,6 +89,15 @@ public class MainActivity extends AppCompatActivity {
         sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                AwesomeMessage message = new AwesomeMessage();
+                message.setText(messageEditText.getText().toString());
+                message.setName(userName);
+                message.setImageUrl(null);
+
+                messageDataBaseReference.push().setValue(message);// метод push вместо ручного назначения имени узла,
+                                                                  //как message, закоментировано выше в примере
+
                 messageEditText.setText("");
             }
         });
