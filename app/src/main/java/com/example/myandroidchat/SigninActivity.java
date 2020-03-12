@@ -106,7 +106,6 @@ public class SigninActivity extends AppCompatActivity {
                     });
         }
     }
-
     public void toggleLoginMode(View view) {
 
         if (loginModeActive){
