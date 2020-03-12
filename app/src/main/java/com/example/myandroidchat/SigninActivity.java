@@ -1,5 +1,6 @@
 package com.example.myandroidchat;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -28,6 +29,8 @@ public class SigninActivity extends AppCompatActivity {
     private EditText nameEditText;
     private TextView toggleLoginSignUpTextView;
     private Button loginSignUpButton;
+
+    private boolean loginModeActive;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,5 +76,19 @@ public class SigninActivity extends AppCompatActivity {
                         // ...
                     }
                 });
+        startActivity(new Intent(SigninActivity.this, MainActivity.class));
+    }
+
+    public void toggleLoginMode(View view) {
+
+        if (loginModeActive){
+            loginModeActive = false;
+            loginSignUpButton.setText("Sign up");
+            toggleLoginSignUpTextView.setText("Or, log in");
+        }else {
+            loginModeActive = true;
+            loginSignUpButton.setText("Log in");
+            toggleLoginSignUpTextView.setText("Or, sign up");
+        }
     }
 }
