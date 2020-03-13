@@ -55,6 +55,10 @@ public class SigninActivity extends AppCompatActivity {
 
             }
         });
+
+        if (auth.getCurrentUser() != null){
+            startActivity(new Intent(SigninActivity.this, MainActivity.class));
+        }
     }
 
     private void loginSignUpUser(String email, String password) {
