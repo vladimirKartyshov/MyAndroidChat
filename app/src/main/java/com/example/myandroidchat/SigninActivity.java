@@ -17,6 +17,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class SigninActivity extends AppCompatActivity {
 
@@ -33,12 +35,17 @@ public class SigninActivity extends AppCompatActivity {
 
     private boolean loginModeActive;
 
+    FirebaseDatabase dataBase;
+    DatabaseReference usersDataBaseReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
 
         auth = FirebaseAuth.getInstance();
+        dataBase = FirebaseDatabase.getInstance();
+        usersDataBaseReference = dataBase.getReference().child("users");
 
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -110,8 +117,9 @@ public class SigninActivity extends AppCompatActivity {
                                     // Sign in success, update UI with the signed-in user's information
                                     Log.d(TAG, "createUserWithEmail:success");
                                     FirebaseUser user = auth.getCurrentUser();
-                                    startActivity(new Intent(SigninActivity.this, MainActivity.class));
+                                    createUser(user);
                                     // updateUI(user);
+                                    startActivity(new Intent(SigninActivity.this, MainActivity.class));
                                 } else {
                                     // If sign in fails, display a message to the user.
                                     Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -127,6 +135,16 @@ public class SigninActivity extends AppCompatActivity {
 
         }
     }
+
+    private void createUser(FirebaseUser firebaseUser) {
+        User user = new User();
+        user.setId(firebaseUser.getUid());
+        user.setEmail(firebaseUser.getEmail());
+        user.setName(nameEditText.getText().toString().trim());
+
+        usersDataBaseReference.push().setValue(user);
+    }
+
     public void toggleLoginMode(View view) {
 
         if (loginModeActive){
