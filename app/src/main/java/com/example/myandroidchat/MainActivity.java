@@ -43,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
     FirebaseDatabase dataBase;
     DatabaseReference messageDataBaseReference;
     ChildEventListener messagesChildEventListener;
-//    DatabaseReference userDataBaseReference;
+    DatabaseReference usersDataBaseReference;
+    ChildEventListener usersChildEventListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
         dataBase = FirebaseDatabase.getInstance();//получаем допуск ко всей базе данных
         messageDataBaseReference = dataBase.getReference().child("messages");
+        usersDataBaseReference = dataBase.getReference().child("users");
 //        messageDataBaseReference = dataBase.getReference().child("users");
 //        messageDataBaseReference.child("message1").setValue("Hello FireBase!");
 //        messageDataBaseReference.child("message2").setValue("Hello World!");//чтобы добавить еще один узел(запись) в базу
@@ -125,6 +127,37 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        usersChildEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                User user = dataSnapshot.getValue(User.class);
+                if (user.getId().equals(FirebaseAuth.getInstance().getCurrentUser().getUid())){
+                    userName = user.getName();
+                }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        usersDataBaseReference.addChildEventListener(usersChildEventListener);
 
         messagesChildEventListener = new ChildEventListener() {
             @Override
