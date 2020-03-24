@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String userName;
 
+    private static final int RC_IMAGE_PICKER = 123;
+
     FirebaseDatabase dataBase;
     DatabaseReference messageDataBaseReference;
     ChildEventListener messagesChildEventListener;
@@ -124,7 +126,11 @@ public class MainActivity extends AppCompatActivity {
         sendImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);//создаем intent для получения какого-нибудь
+                                                                      // контента(изображения)
+                intent.setType("image/jpg");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true);
+                startActivityForResult(Intent.createChooser(intent,"Choose an image"), RC_IMAGE_PICKER);
             }
         });
 
