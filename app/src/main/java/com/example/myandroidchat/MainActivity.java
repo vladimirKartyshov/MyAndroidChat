@@ -20,6 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -28,6 +31,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -229,8 +233,39 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == RC_IMAGE_PICKER && resultCode == RESULT_OK){
             Uri selectedImageUri = data.getData();
-            StorageReference imageReference = chatImagesStorageReference
+            final StorageReference imageReference = chatImagesStorageReference
                     .child(selectedImageUri.getLastPathSegment());//selectedImageUri будет иметь название последнего uri
+
+            UploadTask uploadTask = imageReference.putFile(selectedImageUri);
+
+               // код скопированный с документации по 258 строку
+            uploadTask = imageReference.putFile(selectedImageUri);
+
+            Task<Uri> urlTask = uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+                @Override
+                public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+
+                    // Continue with the task to get the download URL
+                    return imageReference.getDownloadUrl();
+                }
+            }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+                @Override
+                public void onComplete(@NonNull Task<Uri> task) {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        AwesomeMessage message = new AwesomeMessage();
+                        message.setImageUrl(downloadUri.toString());
+                        message.setName(userName);
+                        messageDataBaseReference.push().setValue(message);
+                    } else {
+                        // Handle failures
+                        // ...
+                    }
+                }
+            });
         }
     }
 }
