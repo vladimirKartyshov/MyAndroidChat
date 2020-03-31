@@ -1,6 +1,7 @@
 package com.example.myandroidchat;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -25,6 +26,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,14 +51,21 @@ public class MainActivity extends AppCompatActivity {
     DatabaseReference usersDataBaseReference;
     ChildEventListener usersChildEventListener;
 
+    FirebaseStorage storage;
+    StorageReference chatImagesStorageReference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         dataBase = FirebaseDatabase.getInstance();//получаем допуск ко всей базе данных
+        storage = FirebaseStorage.getInstance();
+
         messageDataBaseReference = dataBase.getReference().child("messages");
         usersDataBaseReference = dataBase.getReference().child("users");
+        chatImagesStorageReference = storage.getReference().child("chat_images");//чат который создали в storage
+
 //        messageDataBaseReference = dataBase.getReference().child("users");
 //        messageDataBaseReference.child("message1").setValue("Hello FireBase!");
 //        messageDataBaseReference.child("message2").setValue("Hello World!");//чтобы добавить еще один узел(запись) в базу
@@ -128,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);//создаем intent для получения какого-нибудь
                                                                       // контента(изображения)
-                intent.setType("image/jpg");
+                intent.setType("image/*");
                 intent.putExtra(Intent.EXTRA_LOCAL_ONLY,true);
                 startActivityForResult(Intent.createChooser(intent,"Choose an image"), RC_IMAGE_PICKER);
             }
@@ -211,6 +221,16 @@ public class MainActivity extends AppCompatActivity {
                 return true;
                 default:
                     return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == RC_IMAGE_PICKER && resultCode == RESULT_OK){
+            Uri selectedImageUri = data.getData();
+            StorageReference imageReference = chatImagesStorageReference
+                    .child(selectedImageUri.getLastPathSegment());//selectedImageUri будет иметь название последнего uri
         }
     }
 }
