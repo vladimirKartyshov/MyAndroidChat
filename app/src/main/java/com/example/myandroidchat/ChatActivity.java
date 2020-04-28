@@ -47,6 +47,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private String userName;
     private String recipientUserId;
+    private String recipientUserName;
 
     private static final int RC_IMAGE_PICKER = 123;
 
@@ -71,9 +72,10 @@ public class ChatActivity extends AppCompatActivity {
         if (intent != null){
             userName = intent.getStringExtra("userName");
             recipientUserId = intent.getStringExtra("recipientUserId");
-        }else {
-            userName = "Default User";
+            recipientUserName = intent.getStringExtra("recipientUserName");
         }
+
+        setTitle("Chat with" + recipientUserName);
 
 
         dataBase = FirebaseDatabase.getInstance();//получаем допуск ко всей базе данных
@@ -193,9 +195,12 @@ public class ChatActivity extends AppCompatActivity {
                 AwesomeMessage message = dataSnapshot.getValue(AwesomeMessage.class);
 
                 if (message.getSender().equals(auth.getCurrentUser().getUid())
-                && message.getRecipient().equals(recipientUserId) ||
-                        message.getRecipient().equals(auth.getCurrentUser().getUid())
+                && message.getRecipient().equals(recipientUserId)) {
+                    message.setMine(true);
+                    adapter.add(message);
+                } else   if (message.getRecipient().equals(auth.getCurrentUser().getUid())
                                 && message.getSender().equals(recipientUserId)) {
+                    message.setMine(false);
                     adapter.add(message);
                 }
 
