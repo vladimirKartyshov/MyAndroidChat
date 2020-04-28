@@ -35,8 +35,8 @@ public class SigninActivity extends AppCompatActivity {
 
     private boolean loginModeActive;
 
-    FirebaseDatabase dataBase;
-    DatabaseReference usersDataBaseReference;
+    private FirebaseDatabase dataBase;
+    private DatabaseReference usersDataBaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

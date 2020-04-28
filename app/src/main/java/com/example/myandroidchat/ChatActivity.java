@@ -46,22 +46,35 @@ public class ChatActivity extends AppCompatActivity {
     private EditText messageEditText;
 
     private String userName;
+    private String recipientUserId;
 
     private static final int RC_IMAGE_PICKER = 123;
 
-    FirebaseDatabase dataBase;
-    DatabaseReference messageDataBaseReference;
-    ChildEventListener messagesChildEventListener;
-    DatabaseReference usersDataBaseReference;
-    ChildEventListener usersChildEventListener;
+    private FirebaseAuth auth;
+    private FirebaseDatabase dataBase;
+    private DatabaseReference messageDataBaseReference;
+    private ChildEventListener messagesChildEventListener;
+    private DatabaseReference usersDataBaseReference;
+    private ChildEventListener usersChildEventListener;
 
-    FirebaseStorage storage;
-    StorageReference chatImagesStorageReference;
+    private FirebaseStorage storage;
+    private StorageReference chatImagesStorageReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        auth = FirebaseAuth.getInstance();
+
+        Intent intent = getIntent();
+        if (intent != null){
+            userName = intent.getStringExtra("userName");
+            recipientUserId = intent.getStringExtra("recipientUserId");
+        }else {
+            userName = "Default User";
+        }
+
 
         dataBase = FirebaseDatabase.getInstance();//получаем допуск ко всей базе данных
         storage = FirebaseStorage.getInstance();
@@ -79,13 +92,6 @@ public class ChatActivity extends AppCompatActivity {
         sendImageButton = findViewById(R.id.sendPhotoButton);
         sendMessageButton = findViewById(R.id.sendMessageButton);
         messageEditText = findViewById(R.id.messageEditText);
-
-        Intent intent = getIntent();
-        if (intent != null){
-            userName = intent.getStringExtra("userName");
-        }else {
-            userName = "Default User";
-        }
 
 
         messageListView = findViewById(R.id.messageListView);
@@ -128,6 +134,8 @@ public class ChatActivity extends AppCompatActivity {
                 AwesomeMessage message = new AwesomeMessage();
                 message.setText(messageEditText.getText().toString());
                 message.setName(userName);
+                message.setSender(auth.getCurrentUser().getUid());
+                message.setRecipient(recipientUserId);
                 message.setImageUrl(null);
 
                 messageDataBaseReference.push().setValue(message);// метод push вместо ручного назначения имени узла,
@@ -183,7 +191,14 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 AwesomeMessage message = dataSnapshot.getValue(AwesomeMessage.class);
-                adapter.add(message);
+
+                if (message.getSender().equals(auth.getCurrentUser().getUid())
+                && message.getRecipient().equals(recipientUserId) ||
+                        message.getRecipient().equals(auth.getCurrentUser().getUid())
+                                && message.getSender().equals(recipientUserId)) {
+                    adapter.add(message);
+                }
+
             }
 
             @Override
@@ -259,6 +274,8 @@ public class ChatActivity extends AppCompatActivity {
                         AwesomeMessage message = new AwesomeMessage();
                         message.setImageUrl(downloadUri.toString());
                         message.setName(userName);
+                        message.setSender(auth.getCurrentUser().getUid());
+                        message.setRecipient(recipientUserId);
                         messageDataBaseReference.push().setValue(message);
                     } else {
                         // Handle failures
